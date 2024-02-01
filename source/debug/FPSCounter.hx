@@ -41,11 +41,9 @@ class FPSCounter extends TextField
 		selectable = false;
 		mouseEnabled = false;
 		defaultTextFormat = new TextFormat("_sans", 13, startColor, true); // RGB color
-		var textField:TextField = new TextField();
-                border = true; // Mostrar un borde alrededor del campo de texto
-                borderColor = 0x000000; // Color del borde (negr)
-		borderThickness = 2; // Grosor del borde (2 píxeles)
-                width = FlxG.width;
+		border = true; // Mostrar un borde alrededor del campo de texto
+        borderColor = 0x000000; // Color del borde (negr)
+		width = FlxG.width;
 		multiline = true;
 		text = "FPS: ";
 
