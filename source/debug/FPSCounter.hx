@@ -26,7 +26,6 @@ class FPSCounter extends TextField
 	private var animationDuration:Float;
 	private var elapsedTime:Float;
 	private var timer:Timer;
-	// carajo mierdda
 
 	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000, ?startColor:Int = 0xFF0000, ?targetColor:Int = 0x00FF00, ?animationDuration:Float = 1.0)
 	{
@@ -36,19 +35,17 @@ class FPSCounter extends TextField
 		else
 			os = '\nOS: ${LimeSystem.platformName}' #if cpp + ' ${getArch()}' #end + ' - ${LimeSystem.platformVersion}';
 
-        var systemInfo:String = '\nSystem Type: ${LimeSystem.systemType}';
-		systemInfo += '\nAndroid Version: ${LimeSystem.androidVersion}';
-		systemInfo += '\nDevice Name: ${LimeSystem.deviceModel}';
-		systemInfo += '\nTotal RAM: ${LimeSystem.totalMemory}';
-		os += systemInfo;
-		
 		positionFPS(x, y);
 
 		currentFPS = 0;
 		selectable = false;
 		mouseEnabled = false;
 		defaultTextFormat = new TextFormat("_sans", 13, startColor, true); // RGB color
-		width = FlxG.width;
+		var textField:TextField = new TextField();
+                border = true; // Mostrar un borde alrededor del campo de texto
+                borderColor = 0x000000; // Color del borde (negr)
+		borderThickness = 2; // Grosor del borde (2 píxeles)
+                width = FlxG.width;
 		multiline = true;
 		text = "FPS: ";
 
