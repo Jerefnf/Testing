@@ -1,32 +1,33 @@
 package debug;
 
 import flixel.FlxG;
+import flixel.FlxState;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.system.System as OpenFlSystem;
 import lime.system.System as LimeSystem;
+import haxe.Timer;
 
-/**
-	The FPS class provides an easy-to-use monitor to display
-	the current frame rate of an OpenFL project
-**/
 class FPSCounter extends TextField
 {
-	/**
-		The current frame rate, expressed using frames-per-second
-	**/
 	public var currentFPS(default, null):Int;
-
-	/**
-		The current memory usage (WARNING: this is NOT your total program memory usage, rather it shows the garbage collector memory)
-	**/
-	public var memoryMegas(get, never):Float;
+    public var memoryMegas(get, never):Float;
+	public var currentStateName:String;
+	public var deltaTime:Float;
+	public var maxMemoryUsed:Float;
 
 	@:noCompletion private var times:Array<Float>;
 
 	public var os:String = '';
 
-	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000)
+	private var animatedColor:Boolean;
+	private var startColor:Int;
+	private var targetColor:Int;
+	private var animationDuration:Float;
+	private var elapsedTime:Float;
+	private var timer:Timer;
+
+	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000, ?startColor:Int = 0xFF0000, ?targetColor:Int = 0x00FF00, ?animationDuration:Float = 1.0)
 	{
 		super();
 		if(LimeSystem.platformName == LimeSystem.platformVersion || LimeSystem.platformVersion == null)
@@ -34,17 +35,32 @@ class FPSCounter extends TextField
 		else
 			os = '\nOS: ${LimeSystem.platformName}' #if cpp + ' ${getArch()}' #end + ' - ${LimeSystem.platformVersion}';
 
+        var systemInfo:String = '\nSystem Type: ${LimeSystem.systemType}';
+		systemInfo += '\nAndroid Version: ${LimeSystem.androidVersion}';
+		systemInfo += '\nDevice Name: ${LimeSystem.deviceModel}';
+		systemInfo += '\nTotal RAM: ${LimeSystem.totalMemory}';
+		os += systemInfo;
+		
 		positionFPS(x, y);
 
 		currentFPS = 0;
 		selectable = false;
 		mouseEnabled = false;
-		defaultTextFormat = new TextFormat("_sans", 14, color);
+		defaultTextFormat = new TextFormat("_sans", 13, startColor, true); // RGB color
 		width = FlxG.width;
 		multiline = true;
 		text = "FPS: ";
 
+		this.startColor = startColor;
+		this.targetColor = targetColor;
+		this.animationDuration = animationDuration;
+		this.elapsedTime = 0;
+		this.animatedColor = startColor != targetColor;
+		this.timer = new Timer(1000 / FlxG.updateFramerate);
+		this.timer.run = updateColor;
+
 		times = [];
+		maxMemoryUsed = 0;
 	}
 
 	var deltaTimeout:Float = 0.0;
@@ -52,7 +68,6 @@ class FPSCounter extends TextField
 	// Event Handlers
 	private override function __enterFrame(deltaTime:Float):Void
 	{
-		// prevents the overlay from updating every frame, why would you need to anyways
 		if (deltaTimeout > 1000) {
 			deltaTimeout = 0.0;
 			return;
@@ -62,21 +77,24 @@ class FPSCounter extends TextField
 		times.push(now);
 		while (times[0] < now - 1000) times.shift();
 
-		currentFPS = times.length < FlxG.updateFramerate ? times.length : FlxG.updateFramerate;		
-		updateText();
+		currentFPS = times.length < FlxG.updateFramerate ? times.length : FlxG.updateFramerate;
+
+		updateText(deltaTime);
 		deltaTimeout += deltaTime;
 	}
 
-	public dynamic function updateText():Void // so people can override it in hscript
+	public dynamic function updateText(deltaTime:Float):Void // para que la gente pueda anularla en hscript
 	{
-		text = 
-		'FPS: $currentFPS' + 
-		'\nMemory: ${flixel.util.FlxStringUtil.formatBytes(memoryMegas)}' +
-		os;
+		var currentState:FlxState = FlxG.state;
+		currentStateName = currentState != null ? Type.getClassName(Type.getClass(currentState)) : "Unknown";
 
-		textColor = 0xFFFFFFFF;
-		if (currentFPS < FlxG.drawFramerate * 0.5)
-			textColor = 0xFFFF0000;
+		text =
+		'FPS: $currentFPS' +
+		'\nMemory: ${flixel.util.FlxStringUtil.formatBytes(memoryMegas)}' +
+		'\nCurrent State: $currentStateName' +
+		'\nDelta Time: ${Std.int(deltaTime * 1000)} ms' +
+		'\nMax Memory Used: ${flixel.util.FlxStringUtil.formatBytes(maxMemoryUsed)}' +
+		os;
 	}
 
 	inline function get_memoryMegas():Float
@@ -124,4 +142,30 @@ class FPSCounter extends TextField
 		return null;
 	}
         #end
+
+	private function updateColor():Void
+	{
+		if (animatedColor) {
+			elapsedTime += 1000 / FlxG.updateFramerate;
+			var progress:Float = elapsedTime / (animationDuration * 1000);
+			var rStart:Int = (startColor >> 16) & 0xFF;
+			var gStart:Int = (startColor >> 8) & 0xFF;
+			var bStart:Int = startColor & 0xFF;
+			var rTarget:Int = (targetColor >> 16) & 0xFF;
+			var gTarget:Int = (targetColor >> 8) & 0xFF;
+			var bTarget:Int = targetColor & 0xFF;
+			
+			var r:Int = Std.int(rStart + (rTarget - rStart) * progress);
+			var g:Int = Std.int(gStart + (gTarget - gStart) * progress);
+			var b:Int = Std.int(bStart + (bTarget - bStart) * progress);
+			
+			defaultTextFormat.color = (r & 0xFF) << 16 | (g & 0xFF) << 8 | (b & 0xFF);
+			setTextFormat(defaultTextFormat);
+			
+			if (elapsedTime >= animationDuration * 1000) {
+				animatedColor = false;
+				timer.stop();
+			}
+		}
+	}
 }
