@@ -20,12 +20,13 @@ class FPSCounter extends TextField
 
 	public var os:String = '';
 
-	private var animatedColor:Boolean;
+	private var animatedColor:Bool;
 	private var startColor:Int;
 	private var targetColor:Int;
 	private var animationDuration:Float;
 	private var elapsedTime:Float;
 	private var timer:Timer;
+	// carajo mierdda
 
 	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000, ?startColor:Int = 0xFF0000, ?targetColor:Int = 0x00FF00, ?animationDuration:Float = 1.0)
 	{
