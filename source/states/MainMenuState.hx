@@ -26,6 +26,7 @@ class MainMenuState extends MusicBeatState
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
+	var bf:FlxSprite;
 
 	override function create()
 	{
@@ -44,10 +45,9 @@ class MainMenuState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
-		var yScroll:Float = Math.max(0.25 - (0.05 * (optionShit.length - 4)), 0.1);
-		var bg:FlxSprite = new FlxSprite(-80).loadGraphic(Paths.image('menuBG'));
+		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuBG'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
-		bg.scrollFactor.set(0, yScroll);
+		bg.scrollFactor.set(1, 1);
 		bg.setGraphicSize(Std.int(bg.width * 1.175));
 		bg.updateHitbox();
 		bg.screenCenter();
@@ -56,15 +56,25 @@ class MainMenuState extends MusicBeatState
 		camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
 
-		magenta = new FlxSprite(-80).loadGraphic(Paths.image('menuDesat'));
+		magenta = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		magenta.antialiasing = ClientPrefs.data.antialiasing;
-		magenta.scrollFactor.set(0, yScroll);
+		magenta.scrollFactor.set(1, 1);
 		magenta.setGraphicSize(Std.int(magenta.width * 1.175));
 		magenta.updateHitbox();
 		magenta.screenCenter();
 		magenta.visible = false;
 		magenta.color = 0xFFfd719b;
 		add(magenta);
+		
+		// lel
+        bf = new FlxSprite(FlxG.width - 120, FlxG.height / 2);
+        bf.antialiasing = ClientPrefs.data.antialiasing;
+	    bf.frames = Paths.getSparrowAtlas('characters/Boyfriend');
+        bf.animation.addByPrefix("idle", "BF idle dance", 24, true);
+        bf.animation.addByPrefix("selected", "BF HEY!!", 24, false);
+        bf.animation.play("idle");
+        bf.origin.set(0, 0); // Establecer el origen en la esquina superior izquierda
+        add(bf);
 
 		menuItems = new FlxTypedGroup<FlxSprite>();
 		add(menuItems);
@@ -72,21 +82,22 @@ class MainMenuState extends MusicBeatState
 		for (i in 0...optionShit.length)
 		{
 			var offset:Float = 108 - (Math.max(optionShit.length, 4) - 4) * 80;
-			var menuItem:FlxSprite = new FlxSprite(0, (i * 140) + offset);
-			menuItem.antialiasing = ClientPrefs.data.antialiasing;
-			menuItem.frames = Paths.getSparrowAtlas('mainmenu/menu_' + optionShit[i]);
-			menuItem.animation.addByPrefix('idle', optionShit[i] + " basic", 24);
-			menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
-			menuItem.animation.play('idle');
-			menuItems.add(menuItem);
-			var scr:Float = (optionShit.length - 4) * 0.135;
-			if (optionShit.length < 6)
-				scr = 0;
-			menuItem.scrollFactor.set(0, scr);
-			menuItem.updateHitbox();
-			menuItem.screenCenter(X);
+			var menuItem:FlxSprite = new FlxSprite(10, (i * 140) + offset);
+            menuItem.antialiasing = ClientPrefs.data.antialiasing;
+            menuItem.frames = Paths.getSparrowAtlas('mainmenu/menu_' + optionShit[i]);
+            menuItem.animation.addByPrefix('idle', optionShit[i] + " basic", 24);
+            menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
+            menuItem.animation.play('idle');
+            menuItems.add(menuItem);
+            
+            // Agregar el tween de balanceo a cada menuItem
+            FlxTween.tween(menuItem, { x: -20 }, 2, { type: FlxTween.PINGPONG, repeat: FlxTween.LOOP });
 		}
 
+        var psychMark:FlxText = new FlxText(12, FlxG.height - 64, 0, "Ikvi de mierda", 12);
+		psychMark.scrollFactor.set();
+		psychMark.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(psychMark);
 		var psychVer:FlxText = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 12);
 		psychVer.scrollFactor.set();
 		psychVer.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -144,6 +155,19 @@ class MainMenuState extends MusicBeatState
 			if (controls.ACCEPT)
 			{
 				FlxG.sound.play(Paths.sound('confirmMenu'));
+				bf.animation.play("selected");
+				boyfriend.velocity.y = -100; // Efecto de salto al ser seleccionado
+        
+                // Al finalizar la animación, volver a la animación de idle
+                bf.animation.callback = function(sprite:FlxSprite, animation:String):Void
+                {
+                    if (animation == "selected")
+                   {
+                        bf.animation.play("idle");
+                        bf.velocity.y = 0;
+                    }
+                };
+                
 				if (optionShit[curSelected] == 'donate')
 				{
 					CoolUtil.browserLoad('https://ninja-muffin24.itch.io/funkin');
@@ -227,10 +251,5 @@ class MainMenuState extends MusicBeatState
 			curSelected = menuItems.length - 1;
 
 		menuItems.members[curSelected].animation.play('selected');
-		menuItems.members[curSelected].centerOffsets();
-		menuItems.members[curSelected].screenCenter(X);
-
-		camFollow.setPosition(menuItems.members[curSelected].getGraphicMidpoint().x,
-			menuItems.members[curSelected].getGraphicMidpoint().y - (menuItems.length > 4 ? menuItems.length * 8 : 0));
 	}
 }
