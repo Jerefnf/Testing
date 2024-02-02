@@ -9,7 +9,7 @@ import lime.system.System as LimeSystem;
 import haxe.Timer;
 import haxe.Timer.stamp;
 import flixel.util.FlxStringUtil;
-import haxe.Type;
+import haxe.type.Type;
 
 class FPSCounter extends TextField {
     public var currentFPS(default, null):Int;
