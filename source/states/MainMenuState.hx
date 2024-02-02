@@ -5,8 +5,6 @@ import flixel.addons.transition.FlxTransitionableState;
 import flixel.effects.FlxFlicker;
 import lime.app.Application;
 import flixel.util.FlxColor;
-import flixel.text.FlxTextBorderStyle;
-import flixel.tweens.FlxTweenType;
 import flixel.text.FlxText;
 import states.editors.MasterEditorMenu;
 import options.OptionsState;
