@@ -4,6 +4,10 @@ import flixel.FlxObject;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.effects.FlxFlicker;
 import lime.app.Application;
+import flixel.util.FlxColor;
+import flixel.text.FlxTextBorderStyle;
+import flixel.tweens.FlxTweenType;
+import flixel.text.FlxText;
 import states.editors.MasterEditorMenu;
 import options.OptionsState;
 
@@ -91,7 +95,7 @@ class MainMenuState extends MusicBeatState
             menuItems.add(menuItem);
             
             // Agregar el tween de balanceo a cada menuItem
-            FlxTween.tween(menuItem, { x: -20 }, 2, { type: FlxTween.PINGPONG, repeat: FlxTween.LOOP });
+            FlxTween.tween(menuItem, { x: -20 }, 2, { type: FlxTweenType.PINGPONG });
 		}
 
         var psychMark:FlxText = new FlxText(12, FlxG.height - 64, 0, "Ikvi de mierda", 12);
@@ -156,13 +160,13 @@ class MainMenuState extends MusicBeatState
 			{
 				FlxG.sound.play(Paths.sound('confirmMenu'));
 				bf.animation.play("selected");
-				boyfriend.velocity.y = -100; // Efecto de salto al ser seleccionado
+				bf.velocity.y = -100; // Efecto de salto al ser seleccionado
         
                 // Al finalizar la animación, volver a la animación de idle
-                bf.animation.callback = function(sprite:FlxSprite, animation:String):Void
+                bf.animation.callback = function(name: String, frameNumber: Int, frameIndex: Int): Void
                 {
-                    if (animation == "selected")
-                   {
+                    if (name == "selected")
+                    {
                         bf.animation.play("idle");
                         bf.velocity.y = 0;
                     }
