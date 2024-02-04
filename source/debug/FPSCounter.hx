@@ -80,8 +80,9 @@ class FPSCounter extends TextField {
         var blue:Int = Math.sin(0.1 * haxe.Timer.stamp() + 4 * Math.PI / 3) * 127 + 128;
 
         textColor = (red << 16) | (green << 8) | blue; // Combina los valores de rojo, verde y azul para formar el color RGB 
-		if (currentFPS < FlxG.drawFramerate * 0.5)
-			textColor = 0xFFFF0000;
+	if (currentFPS < FlxG.drawFramerate * 0.5)
+	    textColor = 0xFFFF0000;
+    }
 
     inline function get_memoryMegas():Float
         return cast(OpenFlSystem.totalMemory, Float);
