@@ -47,9 +47,8 @@ class MainMenuState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
-		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuBG'));
+		var bg:FlxSprite = new FlxSprite(-60, 0).loadGraphic(Paths.image('menuBG'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
-		bg.scrollFactor.set(1, 1);
 		bg.setGraphicSize(Std.int(bg.width * 1.175));
 		bg.updateHitbox();
 		bg.screenCenter();
@@ -58,9 +57,8 @@ class MainMenuState extends MusicBeatState
 		camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
 
-		magenta = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
+		magenta = new FlxSprite(-50, -45).loadGraphic(Paths.image('menuDesat'));
 		magenta.antialiasing = ClientPrefs.data.antialiasing;
-		magenta.scrollFactor.set(1, 1);
 		magenta.setGraphicSize(Std.int(magenta.width * 1.175));
 		magenta.updateHitbox();
 		magenta.screenCenter();
@@ -69,13 +67,14 @@ class MainMenuState extends MusicBeatState
 		add(magenta);
 		
 		// lel
-        bf = new FlxSprite(FlxG.width - 120, FlxG.height / 2);
+        bf = new FlxSprite(0, 0);
         bf.antialiasing = ClientPrefs.data.antialiasing;
 	    bf.frames = Paths.getSparrowAtlas('characters/Boyfriend');
         bf.animation.addByPrefix("idle", "BF idle dance", 24, true);
         bf.animation.addByPrefix("selected", "BF HEY!!", 24, false);
         bf.animation.play("idle");
-        bf.origin.set(0, 0); // Establecer el origen en la esquina superior izquierda
+        bf.screenCenter();
+        bf.x = FlxG.width - bf.width - 20;
         add(bf);
 
 		menuItems = new FlxTypedGroup<FlxSprite>();
@@ -84,16 +83,18 @@ class MainMenuState extends MusicBeatState
 		for (i in 0...optionShit.length)
 		{
 			var offset:Float = 108 - (Math.max(optionShit.length, 4) - 4) * 80;
-			var menuItem:FlxSprite = new FlxSprite(10, (i * 140) + offset);
+			var menuItem:FlxSprite = new FlxSprite(-60, (i * 140) + offset - 40);
             menuItem.antialiasing = ClientPrefs.data.antialiasing;
             menuItem.frames = Paths.getSparrowAtlas('mainmenu/menu_' + optionShit[i]);
             menuItem.animation.addByPrefix('idle', optionShit[i] + " basic", 24);
             menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
             menuItem.animation.play('idle');
+            menuItem.scale.x -= 0.2;
+            menuItem.scale.y -= 0.2;
             menuItems.add(menuItem);
             
             // Agregar el tween de balanceo a cada menuItem
-            FlxTween.tween(menuItem, { x: -20 }, 2, { type: FlxTweenType.PINGPONG });
+            FlxTween.tween(menuItem, { x: -5 }, 2, {type: FlxTweenType.PINGPONG, ease: FlxEase.quadInOut});
 		}
 
         var psychMark:FlxText = new FlxText(12, FlxG.height - 64, 0, "Ikvi de mierda", 12);
