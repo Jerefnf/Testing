@@ -2,6 +2,7 @@ package psychlua;
 
 import Type.ValueType;
 import haxe.Constraints;
+import haxe.rtti.Rtti;
 
 import substates.GameOverSubstate;
 
@@ -128,7 +129,64 @@ class ReflectionFunctions
 			}
 			groupOrArray.remove(groupOrArray[index]);
 		});
-		
+		funk.set("getInstance", function<T>(instanceName:String, instanceClass:Class<T>, ?memberName:String = null):Dynamic {
+                        try {
+                                var instance = Reflect.field(_G, instanceName);
+
+                                if (instance != null && Std.is(instance, instanceClass)) {
+                                        if (memberName != null) {
+                                                if (Reflect.hasField(instance, memberName)) {
+                                                        var member = Reflect.field(instance, memberName);
+                                                        if (Std.is(member, Function)) {
+                                                                return function(args:Array<Dynamic>) {
+                                                                         Reflect.callMethod(instance, Reflect.field(instance, memberName), args);
+                                                                };
+                                                        }
+                                                        else {
+                                                                return Reflect.field(instance, memberName);
+                                                        }
+                                                } else {
+                                                        FunkinLua.luaTrace("El miembro '" + memberName + "' no existe en la instancia '" + instanceName + "');
+                                                        return null;
+                                                }
+                                        }
+                                        else {
+                                                var object = {};
+                                                for (member in Reflect.fields(instance)) {
+                                                        Reflect.setProperty(object, member, Reflect.field(instance, member));
+                                                }
+                                                for (method in Reflect.methods(instance)) {
+                                                        Reflect.setProperty(object, method, function(args:Array<Dynamic>) {
+                                                                Reflect.callMethod(instance, Reflect.field(instance, method), args);
+                                                        });
+                                                }
+                                                return object;
+                                        }
+                                } else {
+                                        FunkinLua.luaTrace("La instancia '" + instanceName + "' no es de la clase esperada '" + Type.getClassName(instanceClass) + "', false, false, FlxColor.RED);
+                                        return null;
+                                }
+                        } catch (error:Dynamic) {
+                                FunkinLua.luaTrace("Error al obtener la instancia '" + instanceName + "' : " + error, false, false, FlxColor.RED);
+                                return null;
+                        }
+                });
+                funk.set("setInstance", function<T>(instanceName:String, instanceClass:Class<T>, fieldName:String, value:Dynamic):Dynamic {
+                        try {
+                                var instance = Reflect.field(_G, instanceName);
+
+                                if (instance != null && Std.is(instance, instanceClass)) {
+                                        Reflect.setField(instance, fieldName, value);
+                                        return value;
+                                } else {
+                                        FunkinLua.luaTrace("La instancia '" + instanceName + "' no es de la clase esperada '" + Type.getClassName(instanceClass) + "', false, false, FlxColor.RED);
+                                        return null;
+                                }
+                        } catch (error:Dynamic) {
+                                FunkinLua.luaTrace("Error al establecer el valor del campo en la instancia '"  + instanceName + "' : " + error, false, false, FlxColor.RED);
+                                return null;
+                        }
+                });
 		funk.set("callMethod", function(funcToRun:String, ?args:Array<Dynamic> = null) {
 			return callMethodFromObject(PlayState.instance, funcToRun, parseInstances(args));
 			
